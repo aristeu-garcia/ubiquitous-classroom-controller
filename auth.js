@@ -5,24 +5,28 @@ import open from "open";
 
 config();
 
-const oauth2Client = new google.auth.OAuth2(
-  process.env.CLIENT_ID,
-  process.env.CLIENT_SECRET,
-  "http://localhost:3000/callback"
-);
+const setup = async () => {
+  const oauth2Client = new google.auth.OAuth2(
+    process.env.CLIENT_ID,
+    process.env.CLIENT_SECRET,
+    "http://localhost:3000/callback"
+  );
 
-const authUrl = oauth2Client.generateAuthUrl({
-  access_type: "offline",
-  scope: [
-    "https://www.googleapis.com/auth/calendar.readonly",
-    // "https://www.googleapis.com/auth/calendar.events",
-  ],
-});
+  const authUrl = oauth2Client.generateAuthUrl({
+    access_type: "offline",
+    scope: [
+      "https://www.googleapis.com/auth/calendar.readonly",
+      // "https://www.googleapis.com/auth/calendar.events",
+    ],
+  });
 
-console.log("Abrindo navegador para autenticação...");
-open(authUrl);
-const listCalendarEvents = async (auth) => {
-  const calendar = google.calendar({ version: "v3", auth });
+  console.log("Abrindo navegador para autenticação...");
+  open(authUrl);
+  return oauth2Client;
+};
+const listCalendarEvents = async () => {
+  const oauth2Client = await setup();
+  const calendar = google.calendar({ version: "v3", auth: oauth2Client });
 
   calendar.events.list(
     {
@@ -46,10 +50,7 @@ const listCalendarEvents = async (auth) => {
       }
 
       console.log("Próximos eventos:");
-      events.forEach((event) => {
-        const start = event.start.dateTime || event.start.date;
-        console.log(`- ${start} | ${event.summary}`);
-      });
+      return events;
     }
   );
 };
@@ -82,3 +83,16 @@ createServer(async (req, res) => {
 }).listen(3000, () => {
   console.log("Aguardando resposta em http://localhost:3000/callback");
 });
+
+const getCurrentEvent = (events) => {
+  const now = new Date();
+
+  return events.find((event) => {
+    const start = new Date(event.start.dateTime || event.start.date);
+    const end = new Date(event.end.dateTime || event.end.date);
+
+    return now >= start && now <= end;
+  });
+};
+
+export { getCurrentEvent };
