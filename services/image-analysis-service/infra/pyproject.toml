@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "image-analisys-service"
+version = "0.1.0"
+description = "A service to analisys camera's images and detect teachers"
+authors = ["Heithor <contato.hecthorur@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+loguru = "^0.7.3"
+kafka-python = "^2.2.15"
+python-dotenv = "^1.1.1"
+pillow = "^11.3.0"
+ultralytics = "^8.3.169"
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.12.4"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
