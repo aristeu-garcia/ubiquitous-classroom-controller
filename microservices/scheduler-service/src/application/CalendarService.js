@@ -18,13 +18,15 @@ export class CalendarService {
     });
 
     const events = res.data.items || [];
+
     return events.map(
       e =>
         new CalendarEvent(
           e.id || String(Date.now()),
           e.summary || "",
           e.start.dateTime || e.start.date,
-          e.end.dateTime || e.end.date
+          e.end.dateTime || e.end.date,
+          e.creator.email
         )
     );
   }

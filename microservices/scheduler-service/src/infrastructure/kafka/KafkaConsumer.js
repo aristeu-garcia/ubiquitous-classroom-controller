@@ -11,10 +11,8 @@ export default class KafkaConsumer {
 
     this.consumer = this.kafka.consumer({ groupId: "scheduler-group" });
 
-    // Cria instâncias de processor por tópico
     this.processors = {
       "classroom.detections": new CalendarEventProcessor(),
-      // Adicione outros tópicos e processors aqui
     };
   }
 
@@ -40,9 +38,8 @@ export default class KafkaConsumer {
 
         try {
           const eventObj = JSON.parse(value);
-          const event = new CalendarEvent(eventObj);
 
-          await processor.process(event);
+          await processor.process(eventObj);
           console.log(`✅ Mensagem processada no tópico "${topic}":`, eventObj);
         } catch (err) {
           console.error("❌ Erro ao processar mensagem:", err);

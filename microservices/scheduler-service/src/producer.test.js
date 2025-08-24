@@ -14,7 +14,7 @@ const run = async () => {
 
   const message = {
     detectedAt: new Date().toISOString(),
-    email: "garcia.aristeu@academico.ifg.edu.br",
+    email: "dias.aristeu@academico.ifg.edu.br",
     action: "enter",
   };
 

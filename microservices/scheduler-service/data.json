@@ -1,0 +1,62 @@
+[
+  {
+    "detectedAt": "2025-08-24T15:58:21.925Z",
+    "email": "garcia.aristeu@academico.ifg.edu.br",
+    "action": "enter",
+    "event": {
+      "id": "419dbrtejegj10evqs3a8dr1b2",
+      "title": "Aula 1",
+      "start": "2025-08-24T15:45:00.000Z",
+      "end": "2025-08-24T16:30:00.000Z"
+    },
+    "recordedAt": "2025-08-24T15:58:23.589Z"
+  },
+  {
+    "detectedAt": "2025-08-24T15:59:02.331Z",
+    "email": "garcia.aristeu@academico.ifg.edu.br",
+    "action": "enter",
+    "event": {
+      "id": "419dbrtejegj10evqs3a8dr1b2",
+      "title": "Aula 1",
+      "start": "2025-08-24T15:45:00.000Z",
+      "end": "2025-08-24T16:30:00.000Z"
+    },
+    "recordedAt": "2025-08-24T15:59:24.313Z"
+  },
+  {
+    "detectedAt": "2025-08-24T16:00:57.907Z",
+    "email": "dias.aristeu@academico.ifg.edu.br",
+    "action": "enter",
+    "event": {
+      "id": "419dbrtejegj10evqs3a8dr1b2",
+      "title": "Aula 1",
+      "start": "2025-08-24T15:45:00.000Z",
+      "end": "2025-08-24T16:30:00.000Z"
+    },
+    "recordedAt": "2025-08-24T16:01:20.501Z"
+  },
+  {
+    "detectedAt": "2025-08-24T16:01:11.119Z",
+    "email": "dias.aristeu@academico.ifg.edu.br",
+    "action": "enter",
+    "event": {
+      "id": "419dbrtejegj10evqs3a8dr1b2",
+      "title": "Aula 1",
+      "start": "2025-08-24T15:45:00.000Z",
+      "end": "2025-08-24T16:30:00.000Z"
+    },
+    "recordedAt": "2025-08-24T16:01:20.851Z"
+  },
+  {
+    "detectedAt": "2025-08-24T16:02:02.088Z",
+    "email": "dias.aristeu@academico.ifg.edu.br",
+    "action": "enter",
+    "event": {
+      "id": "419dbrtejegj10evqs3a8dr1b2",
+      "title": "Aula 1",
+      "start": "2025-08-24T15:45:00.000Z",
+      "end": "2025-08-24T16:30:00.000Z"
+    },
+    "recordedAt": "2025-08-24T16:02:06.527Z"
+  }
+]
