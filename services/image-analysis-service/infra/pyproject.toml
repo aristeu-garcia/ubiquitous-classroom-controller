@@ -12,6 +12,7 @@ kafka-python = "^2.2.15"
 python-dotenv = "^1.1.1"
 pillow = "^11.3.0"
 ultralytics = "^8.3.169"
+pymongo = "^4.14.1"
 
 
 [tool.poetry.group.dev.dependencies]

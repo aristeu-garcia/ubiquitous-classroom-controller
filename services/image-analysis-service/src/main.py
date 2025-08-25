@@ -2,10 +2,12 @@ import signal
 import sys
 
 from loguru import logger
+from datetime import datetime, UTC
 
 from detection_producer import ProfessorDetectionProducer
 from image_consumer import ImageConsumer
-from infra.config import Config
+from infra.config import Config, DEFATULT_DATE_FORMAT
+from infra.db_manager import MongoDBManager
 from professor_detector import ProfessorDetector
 
 
@@ -19,6 +21,7 @@ class ImageAnalysisService:
         self.detector = None
         self.consumer = None
         self.producer = None
+        self.mongo_db_manager = None
 
         # Setup signal handlers for graceful shutdown
         signal.signal(signal.SIGINT, self._signal_handler)
@@ -29,7 +32,21 @@ class ImageAnalysisService:
         logger.info(f"Received signal {signum}, shutting down gracefully...")
         self.running = False
 
-    def process_image_message(self, message_data: dict) -> None:
+    def _prepare_kafka_message(self, final_result: bool) -> dict:
+        detected_at = datetime.now(UTC).strftime(DEFATULT_DATE_FORMAT)
+        result = self.mongo_db_manager.get_email_by_label("teacher")
+
+        if not result:
+            logger.error("No data found in the database")
+            return {}
+
+        return {
+            "detectedAt": detected_at,
+            "email": result["email"],
+            "action": "enter" if final_result else "leave",
+        }
+
+    def process_image_message(self, message_data: dict) -> bool:
         """Process a single image message.
 
         Args:
@@ -50,18 +67,14 @@ class ImageAnalysisService:
 
         detection_result = self.detector.analyze_image_from_base64(base64_image)
 
-        # Send detection event to Kafka
-        success = self.producer.send_detection_event(
-            detection_data=detection_result,
-            original_message_key=message_data.get("key"),
-        )
-
-        if success:
+        if detection_result["professor_detected"]:
             logger.info(
                 f"Successfully processed image. Professor detected: {detection_result.get('professor_detected', False)}"
             )
+            return True
         else:
-            logger.error("Failed to send detection event to Kafka")
+            logger.info("Professor not detected in the image")
+            return False
 
     def run(self) -> None:
         """Run the image analysis service."""
@@ -80,6 +93,10 @@ class ImageAnalysisService:
             self.detector = ProfessorDetector(config=self.config.model)
             self.consumer = ImageConsumer(config=self.config.kafka)
             self.producer = ProfessorDetectionProducer(config=self.config.kafka)
+            self.mongo_db_manager = MongoDBManager(config=self.config.mongo)
+
+            detection_window = []
+            window_size = 5
 
             with self.consumer, self.producer:
                 for message_data in self.consumer.consume_messages():
@@ -87,7 +104,27 @@ class ImageAnalysisService:
                         logger.info("Stopping service due to shutdown signal")
                         break
 
-                    self.process_image_message(message_data=message_data)
+                    professor_detected = self.process_image_message(message_data=message_data)
+                    detection_window.append(professor_detected)
+
+                    # Keep window size fixed
+                    if len(detection_window) > window_size:
+                        detection_window.pop(0)
+
+                    # Only act if window is full
+                    if len(detection_window) == window_size:
+                        detected_count = sum(detection_window)
+                        leave_count = window_size - detected_count
+
+                        # Send event only if all in window are same and last event was different
+                        if detected_count == window_size:
+                            message = self._prepare_kafka_message(final_result=True)
+                            self.producer.send_detection_event(message)
+                            detection_window.clear()
+                        elif leave_count == window_size:
+                            message = self._prepare_kafka_message(final_result=False)
+                            self.producer.send_detection_event(message)
+                            detection_window.clear()
 
         except KeyboardInterrupt:
             logger.info("Service interrupted by user")

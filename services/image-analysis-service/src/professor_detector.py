@@ -101,9 +101,6 @@ class ProfessorDetector:
                         ):
                             professor_detected = True
 
-            logger.info(
-                f"Detection completed. Professor detected: {professor_detected}"
-            )
             return professor_detected
 
         except Exception as e:
