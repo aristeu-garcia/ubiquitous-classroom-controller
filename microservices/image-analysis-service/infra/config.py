@@ -7,6 +7,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+DEFATULT_DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+INTERVAL_BETWEEN_DETECTIONS = 3
+
 @dataclass
 class KafkaConfig:
     """Kafka configuration."""
@@ -52,12 +55,29 @@ class ModelConfig:
         )
 
 
+@dataclass    
+class MongoDBConfig:
+    """MongoDB configuration."""
+
+    uri: str
+    db_name: str
+
+    @classmethod
+    def from_env(cls) -> "MongoDBConfig":
+        """Create MongoDBConfig from environment variables."""
+        return cls(
+            uri=os.getenv("MONGO_URI"),
+            db_name=os.getenv("MONGO_DB_NAME"),
+        )
+
+
 @dataclass
 class Config:
     """Main configuration class."""
 
     kafka: KafkaConfig
     model: ModelConfig
+    mongo: MongoDBConfig
 
     @classmethod
     def from_env(cls) -> "Config":
@@ -65,4 +85,5 @@ class Config:
         return cls(
             kafka=KafkaConfig.from_env(),
             model=ModelConfig.from_env(),
+            mongo=MongoDBConfig.from_env(),
         )

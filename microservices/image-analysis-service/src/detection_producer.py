@@ -1,12 +1,12 @@
 import json
-from datetime import datetime
-from typing import Any
+import time
+from datetime import datetime, UTC
+
+from loguru import logger
 
 from kafka import KafkaProducer
 from kafka.errors import KafkaError
-from loguru import logger
-
-from infra.config import KafkaConfig
+from infra.config import KafkaConfig, DEFATULT_DATE_FORMAT, INTERVAL_BETWEEN_DETECTIONS
 
 
 class ProfessorDetectionProducer:
@@ -40,36 +40,18 @@ class ProfessorDetectionProducer:
             logger.error(f"Failed to initialize Kafka producer: {e}")
             raise
 
-    def send_detection_event(
-        self, detection_data: dict[str, Any], original_message_key: str = None
-    ) -> bool:
-        """Send professor detection event to Kafka topic.
-
-        Args:
-            detection_data: Detection analysis results
-            original_message_key: Key from the original image message
-
-        Returns:
-            True if message was sent successfully, False otherwise
-        """
+    def send_detection_event(self, message: dict) -> None:
+        """Send professor detection event to Kafka topic."""
         if not self.producer:
             logger.error("Producer is not initialized")
             return False
-
-        if not detection_data:
-            logger.error("No detection data provided")
+        
+        if not message:
+            logger.error("Empty message, not sending to Kafka")
             return False
 
         try:
-            message = {
-                "timestamp": datetime.now().isoformat(),
-                "service_name": "image-analysis-service",
-                "original_message_key": original_message_key,
-                "professor_detected": detection_data.get("professor_detected", False),
-                "image_metadata": detection_data.get("image_shape", {}),
-            }
-
-            key = message["timestamp"]
+            key = datetime.now(UTC).strftime(DEFATULT_DATE_FORMAT)
 
             future = self.producer.send(
                 topic=self.config.topic_professor_detection, key=key, value=message
@@ -82,7 +64,7 @@ class ProfessorDetectionProducer:
                 f"Detection event sent successfully to topic '{record_metadata.topic}'"
             )
 
-            return True
+            time.sleep(INTERVAL_BETWEEN_DETECTIONS)  # Throttle sending
 
         except KafkaError as e:
             logger.error(f"Kafka error while sending detection event: {e}")
